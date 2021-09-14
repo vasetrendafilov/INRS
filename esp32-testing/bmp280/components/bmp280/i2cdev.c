@@ -24,7 +24,7 @@ typedef struct {
 static i2c_port_state_t states[I2C_NUM_MAX];
 
 #define SEMAPHORE_TAKE(port) do { \
-        if (!xSemaphoreTake(states[port].lock, pdMS_TO_TICKS(CONFIG_I2CDEV_TIMEOUT))) \
+        if (!xSemaphoreTake(states[port].lock, pdMS_TO_TICKS(CONFIG_FATFS_TIMEOUT_MS))) \
         { \
             ESP_LOGE(TAG, "Could not take port mutex %d", port); \
             return ESP_ERR_TIMEOUT; \
@@ -107,7 +107,7 @@ esp_err_t i2c_dev_take_mutex(i2c_dev_t *dev)
 
     ESP_LOGV(TAG, "[0x%02x at %d] taking mutex", dev->addr, dev->port);
 
-    if (!xSemaphoreTake(dev->mutex, pdMS_TO_TICKS(CONFIG_I2CDEV_TIMEOUT)))
+    if (!xSemaphoreTake(dev->mutex, pdMS_TO_TICKS(CONFIG_FATFS_TIMEOUT_MS)))
     {
         ESP_LOGE(TAG, "[0x%02x at %d] Could not take device mutex", dev->addr, dev->port);
         return ESP_ERR_TIMEOUT;
@@ -153,7 +153,7 @@ static esp_err_t i2c_setup_port(const i2c_dev_t *dev)
         i2c_config_t temp;
         memcpy(&temp, &dev->cfg, sizeof(i2c_config_t));
         temp.mode = I2C_MODE_MASTER;
-
+        temp.clk_flags = 0;
         // Driver reinstallation
         if (states[dev->port].installed)
             i2c_driver_delete(dev->port);
@@ -211,7 +211,7 @@ esp_err_t i2c_dev_read(const i2c_dev_t *dev, const void *out_data, size_t out_si
         i2c_master_read(cmd, in_data, in_size, I2C_MASTER_LAST_NACK);
         i2c_master_stop(cmd);
 
-        res = i2c_master_cmd_begin(dev->port, cmd, pdMS_TO_TICKS(CONFIG_I2CDEV_TIMEOUT));
+        res = i2c_master_cmd_begin(dev->port, cmd, pdMS_TO_TICKS(CONFIG_FATFS_TIMEOUT_MS));
         if (res != ESP_OK)
             ESP_LOGE(TAG, "Could not read from device [0x%02x at %d]: %d", dev->addr, dev->port, res);
 
@@ -238,7 +238,7 @@ esp_err_t i2c_dev_write(const i2c_dev_t *dev, const void *out_reg, size_t out_re
             i2c_master_write(cmd, (void *)out_reg, out_reg_size, true);
         i2c_master_write(cmd, (void *)out_data, out_size, true);
         i2c_master_stop(cmd);
-        res = i2c_master_cmd_begin(dev->port, cmd, pdMS_TO_TICKS(CONFIG_I2CDEV_TIMEOUT));
+        res = i2c_master_cmd_begin(dev->port, cmd, pdMS_TO_TICKS(CONFIG_FATFS_TIMEOUT_MS));
         if (res != ESP_OK)
             ESP_LOGE(TAG, "Could not write to device [0x%02x at %d]: %d", dev->addr, dev->port, res);
         i2c_cmd_link_delete(cmd);

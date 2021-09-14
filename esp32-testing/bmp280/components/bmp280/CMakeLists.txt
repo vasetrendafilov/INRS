@@ -1,2 +1,6 @@
-idf_component_register(SRCS "bmp280.c"
-                    INCLUDE_DIRS "include")
+set(COMPONENT_SRCS "bmp280.c"
+                   "i2cdev.c")
+
+set(COMPONENT_ADD_INCLUDEDIRS ".")
+
+register_component()

@@ -2,12 +2,13 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <esp_system.h>
-#include <bmp280.h>
 #include <string.h>
 
+#include "../components/bmp280/bmp280.h"
 
-#define SDA_GPIO 18
-#define SCL_GPIO 19
+
+#define SDA_GPIO 21
+#define SCL_GPIO 22
 
 void bmp280_test(void *pvParameters)
 {

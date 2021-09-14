@@ -9,5 +9,10 @@
     ],
     "idf.portWin": "COM6",
     "idf.pythonBinPathWin": "C:\\Users\\vase_\\.espressif\\python_env\\idf4.3_py3.8_env\\Scripts\\python.exe",
-    "idf.toolsPathWin": "C:\\Users\\vase_\\.espressif"
+    "idf.toolsPathWin": "C:\\Users\\vase_\\.espressif",
+    "files.associations": {
+        "esp_system.h": "c",
+        "cmath": "c",
+        "complex": "c"
+    }
 }
