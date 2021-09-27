@@ -30,7 +30,7 @@ static const char *TAG = "example";
 // By default, SDMMC peripheral is used.
 // To enable SPI mode, uncomment the following line:
 
-// #define USE_SPI_MODE
+#define USE_SPI_MODE
 
 // ESP32-S2 and ESP32-C3 doesn't have an SD Host peripheral, always use SPI:
 #if CONFIG_IDF_TARGET_ESP32S2 ||CONFIG_IDF_TARGET_ESP32C3
