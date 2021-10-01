@@ -5,7 +5,13 @@
    software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
    CONDITIONS OF ANY KIND, either express or implied.
 */
-
+#include "sdcard.h"
+void app_main(void){
+    SdCardInit();
+    SdCardLogStatus("vase");
+    SdCardUnmount();
+}
+/*
 #include <stdio.h>
 #include <string.h>
 #include <sys/unistd.h>
@@ -17,10 +23,8 @@
 #include "driver/spi_common.h"
 #include "sdmmc_cmd.h"
 #include "sdkconfig.h"
-
-#ifdef CONFIG_IDF_TARGET_ESP32
 #include "driver/sdmmc_host.h"
-#endif
+
 
 static const char *TAG = "example";
 
@@ -30,44 +34,17 @@ static const char *TAG = "example";
 // By default, SDMMC peripheral is used.
 // To enable SPI mode, uncomment the following line:
 
-#define USE_SPI_MODE
-
-// ESP32-S2 and ESP32-C3 doesn't have an SD Host peripheral, always use SPI:
-#if CONFIG_IDF_TARGET_ESP32S2 ||CONFIG_IDF_TARGET_ESP32C3
-#ifndef USE_SPI_MODE
-#define USE_SPI_MODE
-#endif // USE_SPI_MODE
-// on ESP32-S2, DMA channel must be the same as host id
-#define SPI_DMA_CHAN    host.slot
-#endif //CONFIG_IDF_TARGET_ESP32S2
-
-// DMA channel to be used by the SPI peripheral
-#ifndef SPI_DMA_CHAN
 #define SPI_DMA_CHAN    1
-#endif //SPI_DMA_CHAN
 
 // When testing SD and SPI modes, keep in mind that once the card has been
 // initialized in SPI mode, it can not be reinitialized in SD mode without
 // toggling power to the card.
 
-#ifdef USE_SPI_MODE
-// Pin mapping when using SPI mode.
-// With this mapping, SD card can be used both in SPI and 1-line SD mode.
-// Note that a pull-up on CS line is required in SD mode.
-#if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2
-#define PIN_NUM_MISO 2
+#define PIN_NUM_MISO 4
 #define PIN_NUM_MOSI 15
 #define PIN_NUM_CLK  14
 #define PIN_NUM_CS   13
 
-#elif CONFIG_IDF_TARGET_ESP32C3
-#define PIN_NUM_MISO 18
-#define PIN_NUM_MOSI 9
-#define PIN_NUM_CLK  8
-#define PIN_NUM_CS   19
-
-#endif //CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2
-#endif //USE_SPI_MODE
 
 void app_main(void)
 {
@@ -92,28 +69,6 @@ void app_main(void)
     // Note: esp_vfs_fat_sdmmc/sdspi_mount is all-in-one convenience functions.
     // Please check its source code and implement error recovery when developing
     // production applications.
-#ifndef USE_SPI_MODE
-    ESP_LOGI(TAG, "Using SDMMC peripheral");
-    sdmmc_host_t host = SDMMC_HOST_DEFAULT();
-
-    // This initializes the slot without card detect (CD) and write protect (WP) signals.
-    // Modify slot_config.gpio_cd and slot_config.gpio_wp if your board has these signals.
-    sdmmc_slot_config_t slot_config = SDMMC_SLOT_CONFIG_DEFAULT();
-
-    // To use 1-line SD mode, uncomment the following line:
-    // slot_config.width = 1;
-
-    // GPIOs 15, 2, 4, 12, 13 should have external 10k pull-ups.
-    // Internal pull-ups are not sufficient. However, enabling internal pull-ups
-    // does make a difference some boards, so we do that here.
-    gpio_set_pull_mode(15, GPIO_PULLUP_ONLY);   // CMD, needed in 4- and 1- line modes
-    gpio_set_pull_mode(2, GPIO_PULLUP_ONLY);    // D0, needed in 4- and 1-line modes
-    gpio_set_pull_mode(4, GPIO_PULLUP_ONLY);    // D1, needed in 4-line mode only
-    gpio_set_pull_mode(12, GPIO_PULLUP_ONLY);   // D2, needed in 4-line mode only
-    gpio_set_pull_mode(13, GPIO_PULLUP_ONLY);   // D3, needed in 4- and 1-line modes
-
-    ret = esp_vfs_fat_sdmmc_mount(mount_point, &host, &slot_config, &mount_config, &card);
-#else
     ESP_LOGI(TAG, "Using SPI peripheral");
 
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
@@ -138,7 +93,7 @@ void app_main(void)
     slot_config.host_id = host.slot;
 
     ret = esp_vfs_fat_sdspi_mount(mount_point, &host, &slot_config, &mount_config, &card);
-#endif //USE_SPI_MODE
+
 
     if (ret != ESP_OK) {
         if (ret == ESP_FAIL) {
@@ -200,8 +155,8 @@ void app_main(void)
     // All done, unmount partition and disable SDMMC or SPI peripheral
     esp_vfs_fat_sdcard_unmount(mount_point, card);
     ESP_LOGI(TAG, "Card unmounted");
-#ifdef USE_SPI_MODE
     //deinitialize the bus after all devices are removed
     spi_bus_free(host.slot);
-#endif
+
 }
+*/

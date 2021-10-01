@@ -90,14 +90,6 @@ struct bmx280_t{
         int16_t P7;
         int16_t P8;
         int16_t P9;
-    #if !(CONFIG_BMX280_EXPECT_BMP280)
-        uint8_t H1;
-        int16_t H2;
-        uint8_t H3;
-        int16_t H4;
-        int16_t H5;
-        int8_t H6;
-    #endif
     } cmps;
     // Storage for a variable proportional to temperature.
     int32_t t_fine;
@@ -192,15 +184,7 @@ static esp_err_t bmx280_probe_address(bmx280_t *bmx280)
 
     if (err == ESP_OK)
     {
-        if (
-        #if CONFIG_BMX280_EXPECT_BME280
-            bmx280->chip_id == BME280_ID
-        #elif CONFIG_BMX280_EXPECT_BMP280
-            bmx280->chip_id == BMP280_ID2 || bmx280->chip_id == BMP280_ID1 || bmx280->chip_id == BMP280_ID0
-        #else
-            bmx280_verify(bmx280->chip_id)
-        #endif
-        )
+        if ( bmx280->chip_id == BMP280_ID2 || bmx280->chip_id == BMP280_ID1 || bmx280->chip_id == BMP280_ID0 )
         {
             ESP_LOGI("bmx280", "Probe success: address=%hhx, id=%hhx", bmx280->slave, bmx280->chip_id);
            return ESP_OK;
@@ -282,30 +266,6 @@ static esp_err_t bmx280_calibrate(bmx280_t *bmx280)
     bmx280->cmps.P8 = buf[20] | (buf[21] << 8);
     bmx280->cmps.P9 = buf[22] | (buf[23] << 8);
 
-    #if !(CONFIG_BMX280_EXPECT_BMP280)
-
-    #if CONFIG_BMX280_EXPECT_DETECT
-    if (bmx280_isBME(bmx280->chip_id)) // Only conditional for detect scenario.
-    #endif
-    {
-        // First get H1 out of the way.
-        bmx280->cmps.H1 = buf[23];
-
-        err = bmx280_read(bmx280, BMX280_REG_CAL_HI, buf, 7);
-
-        if (err != ESP_OK) return err;
-
-        ESP_LOGI("bmx280", "Read High Bank.");
-
-        bmx280->cmps.H2 = buf[0] | (buf[1] << 8);
-        bmx280->cmps.H3 = buf[2];
-        bmx280->cmps.H4 = (buf[3] << 4) | (buf[4] & 0x0F);
-        bmx280->cmps.H5 = (buf[4] >> 4) | (buf[5] << 4);
-        bmx280->cmps.H6 = buf[6];
-    }
-
-    #endif
-
     return ESP_OK;
 }
 
@@ -365,21 +325,6 @@ esp_err_t bmx280_configure(bmx280_t* bmx280, bmx280_config_t *cfg)
     err = bmx280_write(bmx280, BMX280_REG_CONFIG, &num, sizeof num);
 
     if (err) return err;
-
-    #if !(CONFIG_BMX280_EXPECT_BMP280)
-    #if CONFIG_BMX280_EXPECT_DETECT
-    if (bmx280_isBME(bmx280->chip_id))
-    #elif CONFIG_BMX280_EXPECT_BME280
-    #endif
-    {
-        num = cfg->h_sampling;
-        err = bmx280_write(bmx280, BMX280_REG_HUMCTL, &num, sizeof(num));
-
-        if (err) return err;
-    }
-    #endif
-
-    // f = 0; 
     return ESP_OK;
 }
 
@@ -472,26 +417,9 @@ uint32_t BME280_compensate_P_int64(bmx280_t *bmx280, int32_t adc_P)
     return (uint32_t)p;
 }
 
-#if !CONFIG_BMX280_EXPECT_BMP280
-
-// Returns humidity in %RH as unsigned 32 bit integer in Q22.10 format (22 integer and 10 fractional bits).
-// Output value of “47445” represents 47445/1024 = 46.333 %RH
-uint32_t bme280_compensate_H_int32(bmx280_t *bmx280, int32_t adc_H)
-{
-    int32_t v_x1_u32r;
-    v_x1_u32r = (bmx280->t_fine -((int32_t)76800));
-    v_x1_u32r = (((((adc_H << 14) -(((int32_t)bmx280->cmps.H4) << 20) -(((int32_t)bmx280->cmps.H5) * v_x1_u32r)) + ((int32_t)16384)) >> 15) * (((((((v_x1_u32r * ((int32_t)bmx280->cmps.H6)) >> 10) * (((v_x1_u32r * ((int32_t)bmx280->cmps.H3)) >> 11) + ((int32_t)32768))) >> 10) + ((int32_t)2097152)) * ((int32_t)bmx280->cmps.H2) + 8192) >> 14));
-    v_x1_u32r = (v_x1_u32r -(((((v_x1_u32r >> 15) * (v_x1_u32r >> 15)) >> 7) * ((int32_t)bmx280->cmps.H1)) >> 4));
-    v_x1_u32r = (v_x1_u32r < 0 ? 0 : v_x1_u32r);
-    v_x1_u32r = (v_x1_u32r > 419430400? 419430400: v_x1_u32r);
-    return(uint32_t)(v_x1_u32r>>12);
-}
-
-#endif
-
 // END OF DRAGONS
 
-esp_err_t bmx280_readout(bmx280_t *bmx280, int32_t *temperature, uint32_t *pressure, uint32_t *humidity)
+esp_err_t bmx280_readout(bmx280_t *bmx280, int32_t *temperature, uint32_t *pressure)
 {
     if (bmx280 == NULL) return ESP_ERR_INVALID_ARG;
     if (!bmx280_validate(bmx280)) return ESP_ERR_INVALID_STATE;
@@ -518,31 +446,6 @@ esp_err_t bmx280_readout(bmx280_t *bmx280, int32_t *temperature, uint32_t *press
                         (buffer[0] << 12) | (buffer[1] << 4) | (buffer[0] >> 4)
                     );
     }
-
-    #if !(CONFIG_BMX280_EXPECT_BMP280)
-    #if CONFIG_BMX280_EXPECT_DETECT
-    if (bmx280_isBME(bmx280->chip_id))
-    #elif CONFIG_BMX280_EXPECT_BME280
-    #endif
-    {
-        if (humidity)
-        {
-            if ((error = bmx280_read(bmx280, BMX280_REG_HUMI_MSB, buffer, 2)) != ESP_OK)
-                return error;
-
-            *humidity = bme280_compensate_H_int32(bmx280,
-                            (buffer[0] << 8) | buffer[0]
-                        );
-        }
-    }
-    #if CONFIG_BMX280_EXPECT_DETECT
-    else if (humidity)
-        *humidity = UINT32_MAX;
-    #endif
-    #else
-    if (humidity)
-        *humidity = UINT32_MAX;
-    #endif
 
     return ESP_OK;
 }

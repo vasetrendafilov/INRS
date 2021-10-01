@@ -32,20 +32,16 @@ void app_main(void)
 
     bmx280_config_t bmx_cfg = BMX280_DEFAULT_CONFIG;
     ESP_ERROR_CHECK(bmx280_configure(bmx280, &bmx_cfg));
-
+    ESP_ERROR_CHECK(bmx280_setMode(bmx280, BMX280_MODE_CYCLE));
     while (1)
     {
-        ESP_ERROR_CHECK(bmx280_setMode(bmx280, BMX280_MODE_FORCE));
         do {
-            vTaskDelay(pdMS_TO_TICKS(1));
+            vTaskDelay(pdMS_TO_TICKS(5));
         } while(bmx280_isSampling(bmx280));
 
-        float temp = 0, pres = 0, hum = 0;
-        ESP_ERROR_CHECK(bmx280_readoutFloat(bmx280, &temp, &pres, &hum));
-        float altitude;
-        float pressure = pres; // in Si units for Pascal
-        pressure /= 100;
-        altitude = 44330 * (1.0 - pow(pressure / 1017, 0.1903));
+        float temp = 0, pres = 0;
+        ESP_ERROR_CHECK(bmx280_readoutFloat(bmx280, &temp, &pres)); 
+        float altitude = 44330 * (1.0 - pow(pres / (CONFIG_BMX280_ATMOSPHERIC*100), 0.1903));
         ESP_LOGI("test", "Read Values: temp = %f, pres = %f, alt = %f", temp, pres, altitude);
     }
 }

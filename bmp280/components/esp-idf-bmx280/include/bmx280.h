@@ -76,27 +76,22 @@ BMXAPI bool bmx280_isSampling(bmx280_t* bmx280);
  * @param bmx280 Driver structure.
  * @param temperature The temperature in C (0.01 degree C increments)
  * @param pressure The pressure in Pa (1/256 Pa increments)
- * @param humidity The humidity in %RH (1/1024 %RH increments) (UINT32_MAX when invlaid.)
  */
-BMXAPI esp_err_t bmx280_readout(bmx280_t *bmx280, int32_t *temperature, uint32_t *pressure, uint32_t *humidity);
+BMXAPI esp_err_t bmx280_readout(bmx280_t *bmx280, int32_t *temperature, uint32_t *pressure);
 
 /**
  * Convert sensor readout to floating point values.
  * @param tin Input temperature.
  * @param pin Input pressure.
- * @param hin Input humidity.
  * @param tout Output temperature. (C)
  * @param pout Output pressure. (Pa)
- * @param hout Output humidity. (%Rh)
  */
-static inline void bmx280_readout2float(int32_t* tin, uint32_t *pin, uint32_t *hin, float *tout, float *pout, float *hout)
+static inline void bmx280_readout2float(int32_t* tin, uint32_t *pin, float *tout, float *pout)
 {
     if (tin && tout)
         *tout = (float)*tin * 0.01f;
     if (pin && pout)
         *pout = (float)*pin * (1.0f/256.0f);
-    if (hin && hout)
-        *hout = (*hin == UINT32_MAX) ? -1.0f : (float)*hin * (1.0f/1024.0f);
 }
 
 /**
@@ -104,16 +99,15 @@ static inline void bmx280_readout2float(int32_t* tin, uint32_t *pin, uint32_t *h
  * @param bmx280 Driver structure.
  * @param temperature The temperature in C.
  * @param pressure The pressure in Pa.
- * @param humidity The humidity in %RH.
  */
-static inline esp_err_t bmx280_readoutFloat(bmx280_t *bmx280, float* temperature, float* pressure, float* humidity)
+static inline esp_err_t bmx280_readoutFloat(bmx280_t *bmx280, float* temperature, float* pressure)
 {
-    int32_t t; uint32_t p, h;
-    esp_err_t err = bmx280_readout(bmx280, &t, &p, &h);
+    int32_t t; uint32_t p;
+    esp_err_t err = bmx280_readout(bmx280, &t, &p);
 
     if (err == ESP_OK)
     {
-        bmx280_readout2float(&t, &p, &h, temperature, pressure, humidity);
+        bmx280_readout2float(&t, &p, temperature, pressure);
     }
 
     return err;

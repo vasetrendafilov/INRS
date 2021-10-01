@@ -4,6 +4,7 @@
 #include "calibrate.h"
 #include "neo6m.h"
 #include "common.h"
+#include "sdcard.h"
 
 #define I2C_MASTER_NUM I2C_NUM_0 /*!< I2C port number for master dev */
 

@@ -1,17 +1,4 @@
 menu "BMX280 Options"
-    choice BMX280_EXPECT_DEVICE
-        prompt "Installed Sensor Model"
-        help
-            Set to the model of the sensor you are using (if you know it).
-        default BMX280_EXPECT_DETECT
-        config BMX280_EXPECT_DETECT
-            bool "Auto"
-        config BMX280_EXPECT_BME280
-            bool "BME280"
-        config BMX280_EXPECT_BMP280
-            bool "BMP280"
-    endchoice
-
     choice BMX280_ADDRESS
         prompt "I2C Slave Address"
         help
@@ -110,28 +97,10 @@ menu "BMX280 Options"
             config BMX280_DEFAULT_IIR_X16
                 bool "x16"
         endchoice
-
-        menu "BME280 Specific Options"
-            depends on !(BMX280_EXPECT_BMP280)
-
-            choice BMX280_DEFAULT_HUMIDITY_OVERSAMPLING
-                prompt "Humidity Oversampling"
-                default BMX280_DEFAULT_HUMIDITY_OVERSAMPLING_X1
-                help
-                    Refer to BME280 Datasheet for more information.
-                config BMX280_DEFAULT_HUMIDITY_OVERSAMPLING_NONE
-                    bool "None"
-                config BMX280_DEFAULT_HUMIDITY_OVERSAMPLING_X1
-                    bool "x1"
-                config BMX280_DEFAULT_HUMIDITY_OVERSAMPLING_X2
-                    bool "x2"
-                config BMX280_DEFAULT_HUMIDITY_OVERSAMPLING_X4
-                    bool "x4"
-                config BMX280_DEFAULT_HUMIDITY_OVERSAMPLING_X8
-                    bool "x8"
-                config BMX280_DEFAULT_HUMIDITY_OVERSAMPLING_X16
-                    bool "x16"
-            endchoice
-        endmenu
+        config BMX280_ATMOSPHERIC
+            int "Pressure"
+            default 1025
+            help
+                Pressure from the local forcast in hPa for altitude.
     endmenu
 endmenu
