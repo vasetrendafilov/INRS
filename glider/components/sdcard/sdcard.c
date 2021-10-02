@@ -4,9 +4,11 @@ static const char *SDTAG = "sdcard";
 sdmmc_host_t host = SDSPI_HOST_DEFAULT();
 sdmmc_card_t* card;
 const char mount_point[] = MOUNT_POINT;
+char dist[128];
+uint8_t num = 1;
 
 void SdCardInit(){
-    Queue = xQueueCreate(10, sizeof(Data_t));
+    Queue = xQueueCreate(20, sizeof(Data_t));
     if(Queue == 0)
     {
         ESP_LOGE(SDTAG, "Failed to create queue");
@@ -70,10 +72,11 @@ void SdCardInit(){
     }
 
     struct stat st;
-    if (stat(MOUNT_POINT"/log.csv", &st) == 0) {
-        // Delete it if it exists
-        unlink(MOUNT_POINT"/log.csv");
-    }
+    do
+    {
+      snprintf(&dist[0], 128, MOUNT_POINT"/Logs/log%d.csv",num++);
+    } while (stat(dist, &st) == 0);
+    
 }
 
 void SdCardUnmount(){
@@ -88,7 +91,7 @@ void SdCardLog(uint8_t type, char* tag, char* text){
     buf.timestamp = esp_log_timestamp();
     buf.type = type;
     snprintf(buf.tag,10, "%s", tag);
-    snprintf(buf.text,20, "%s", text);
+    snprintf(buf.text,128, "%s", text);
     if(xQueueSend(Queue, &buf, 0) != pdPASS){
         ESP_LOGW(SDTAG,"Failed to send data to queue!");
     }
@@ -100,13 +103,13 @@ void SdCardTask(void* arg){
         if( Queue != 0 )
         {
             ESP_LOGI(SDTAG, "Opening file");
-            FILE* f = fopen(MOUNT_POINT"/log.csv", "a");
+            FILE* f = fopen(dist, "a");
             if (f == NULL) {
                 ESP_LOGE(SDTAG, "Failed to open file for writing");
                 return;
             }
 
-            for (size_t i = 0; i < 10 && uxQueueMessagesWaiting(Queue) != 0; i++)
+            for (size_t i = 0; i < 20 && uxQueueMessagesWaiting(Queue) != 0; i++)
                 if( xQueueReceive( Queue, &buf, 0 ) )
                     fprintf(f, "%d,%d,%s,%s\n", buf.timestamp,buf.type,buf.tag,buf.text); 
 

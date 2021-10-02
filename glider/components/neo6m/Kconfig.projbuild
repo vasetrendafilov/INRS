@@ -1,4 +1,4 @@
-menu "Example Configuration"
+menu "Neo6m Configuration"
 
     config NMEA_PARSER_RING_BUFFER_SIZE
         int "NMEA Parser Ring Buffer Size"
@@ -25,7 +25,7 @@ menu "Example Configuration"
         comment "At least one statement must be selected"
         config NMEA_STATEMENT_GGA
             bool "GGA Statement"
-            default y
+            default n
             help
                 Enabling this option will parse the following parameter from GGA statement:
 
@@ -34,7 +34,7 @@ menu "Example Configuration"
 
         config NMEA_STATEMENT_GSA
             bool "GSA Statement"
-            default y
+            default n
             help
                 Enabling this option will parse the following parameter from GSA statement:
 
@@ -44,7 +44,7 @@ menu "Example Configuration"
 
         config NMEA_STATEMENT_GSV
             bool "GSV Statement"
-            default y
+            default n
             help
                 Enabling this option will parse the following parameter from GSV statement:
 
@@ -64,7 +64,7 @@ menu "Example Configuration"
 
         config NMEA_STATEMENT_GLL
             bool "GLL Statement"
-            default y
+            default n
             help
                 Enabling this option will parse the following parameter from GLL statement:
 
@@ -73,7 +73,7 @@ menu "Example Configuration"
 
         config NMEA_STATEMENT_VTG
             bool "VTG Statement"
-            default y
+            default n
             help
                 Enabling this option will parse the following parameter from VTG statement:
 

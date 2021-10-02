@@ -16,5 +16,5 @@ void app_main(void)
     xTaskCreatePinnedToCore(bmptask, "bmptask", 2048, NULL, 1, NULL,1); 
     xTaskCreatePinnedToCore(mputask, "mputask", 4096, NULL, 1, NULL,1); 
    
-   // gpstask();
+    gpstask();
 }

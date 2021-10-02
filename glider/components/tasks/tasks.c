@@ -143,18 +143,19 @@ static void gps_event_handler(void *event_handler_arg, esp_event_base_t event_ba
     case GPS_UPDATE:
         gps = (gps_t *)event_data;
         /* print information parsed from GPS statements */
-        ESP_LOGI("gps", "%d/%d/%d %d:%d:%d => \r\n"
-                 "\t\t\t\t\t\tlatitude   = %.05f°N\r\n"
-                 "\t\t\t\t\t\tlongitude = %.05f°E\r\n"
-                 "\t\t\t\t\t\taltitude   = %.02fm\r\n"
-                 "\t\t\t\t\t\tspeed      = %fm/s",
+        ESP_LOGI("gps", "%d/%d/%d %d:%d:%d =>  %.05f°N  %.05f°E %.02fm/s %fm/s %f and is %d",
                  gps->date.year , gps->date.month, gps->date.day,
                  gps->tim.hour, gps->tim.minute, gps->tim.second,
-                 gps->latitude, gps->longitude, gps->altitude, gps->speed);
+                 gps->latitude, gps->longitude, gps->cog, gps->speed, gps->variation, gps->valid);
+        if (gps->valid){
+          char str[128];
+          snprintf(&str[0], 128, "%.05f  %.05f  %.02f  %.02f %f %d", gps->latitude, gps->longitude, gps->cog, gps->speed, gps->variation, gps->valid);
+          SdCardLog(5,"neo6m",str);
+        }
         break;
     case GPS_UNKNOWN:
         /* print unknown statements */
-        ESP_LOGW("gps", "Unknown statement:%s", (char *)event_data);
+        //ESP_LOGW("gps", "Unknown statement:%s", (char *)event_data);
         break;
     default:
         break;
@@ -169,10 +170,10 @@ void gpstask(){
     /* register event handler for NMEA parser library */
     nmea_parser_add_handler(nmea_hdl, gps_event_handler, NULL);
 
-    vTaskDelay(10000 / portTICK_PERIOD_MS);
+    //vTaskDelay(10000 / portTICK_PERIOD_MS);
 
     /* unregister event handler */
-    nmea_parser_remove_handler(nmea_hdl, gps_event_handler);
+   // nmea_parser_remove_handler(nmea_hdl, gps_event_handler);
     /* deinit NMEA parser library */
-    nmea_parser_deinit(nmea_hdl);
+   // nmea_parser_deinit(nmea_hdl);
 }

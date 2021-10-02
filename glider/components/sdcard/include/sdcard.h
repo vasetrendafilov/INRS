@@ -30,7 +30,7 @@ typedef struct
   uint32_t timestamp;
   uint8_t type;
   char tag[10];
-  char text[20];  
+  char text[128];  
 } Data_t;
 
 void SdCardInit();
