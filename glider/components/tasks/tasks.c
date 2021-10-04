@@ -9,13 +9,13 @@
 #include "esp_task_wdt.h"
 
 calibration_t cal = {
-    .mag_offset = {.x = 25.183594, .y = 57.519531, .z = -62.648438},
-    .mag_scale = {.x = 1.513449, .y = 1.557811, .z = 1.434039},
-    .accel_offset = {.x = 0.020900, .y = 0.014688, .z = -0.002580},
-    .accel_scale_lo = {.x = -0.992052, .y = -0.990010, .z = -1.011147},
-    .accel_scale_hi = {.x = 1.013558, .y = 1.011903, .z = 1.019645},
+    .mag_offset = {.x = 87.886719, .y = 25.531250, .z = 6.273438},
+    .mag_scale = {.x = 1.070721, .y = 0.885044, .z = 1.068190},
+    .accel_offset = {.x = 0.045010, .y = 0.001923, .z = -0.039888},
+    .accel_scale_lo = {.x = 1.023406, .y = 1.004785, .z = 1.006032},
+    .accel_scale_hi = {.x = -0.980382, .y = -1.001094, .z = -1.015309},
 
-    .gyro_bias_offset = {.x = 0.303956, .y = -1.049768, .z = -0.403782}};
+    .gyro_bias_offset = {.x = 0.768579, .y = -0.180539, .z = 0.919622}};
 
 static const char *TAG = "main";
     
@@ -48,7 +48,7 @@ void transform_mag(vector_t *v)
 void mputask(void* arg){
   i2c_mpu9250_init(&cal);
   MadgwickAHRSinit(SAMPLE_FREQ_Hz, 0.8);
-  SdCardLog(0,"mpu9250","Init succeful");
+  //SdCardLog(0,"mpu9250","Init succeful");
   uint64_t i = 0;
   float heading, pitch, roll;
   while (true)
@@ -77,9 +77,11 @@ void mputask(void* arg){
       
       MadgwickGetEulerAnglesDegrees(&heading, &pitch, &roll);
       ESP_LOGI(TAG, "heading: %2.3f°, pitch: %2.3f°, roll: %2.3f°, Temp %2.3f°C", heading, pitch, roll, temp);
-      char str[128];
-      snprintf(&str[0], 128, "%2.3f %2.3f %2.3f", heading, pitch,roll);
-      SdCardLog(4,"mpu9250",str);
+      char str[17];
+      snprintf(&str[0], 17, "R:%2.0f P:%2.0f Y:%2.0f", roll, pitch,heading);
+      //SdCardLog(4,"mpu9250",str);
+      sdd1306_log(0,str);
+
       // Make the WDT happy
       esp_task_wdt_reset();
     }
@@ -94,8 +96,8 @@ void bmptask(void* arg)
     //ESP_ERROR_CHECK(nvs_flash_init());
     i2c_config_t i2c_cfg = {
         .mode = I2C_MODE_MASTER,
-        .sda_io_num = GPIO_NUM_21,
-        .scl_io_num = GPIO_NUM_22,
+        .sda_io_num = GPIO_NUM_18,
+        .scl_io_num = GPIO_NUM_19,
         .sda_pullup_en = false,
         .scl_pullup_en = false,
         .clk_flags = 0,
@@ -128,10 +130,10 @@ void bmptask(void* arg)
 
         float temp = 0, pres = 0;
         ESP_ERROR_CHECK(bmx280_readoutFloat(bmx280, &temp, &pres));
-        char str[128];
-        snprintf(&str[0], 128, "%f %f", temp, pres);
-        SdCardLog(3,"bmp280",str);
         float altitude = 44330 * (1.0 - pow(pres / (CONFIG_BMX280_ATMOSPHERIC*100), 0.1903));
+        char str[128];
+        snprintf(&str[0], 128, "%f %f %f", temp, pres, altitude);
+        SdCardLog(3,"bmp280",str);
         ESP_LOGI("bmp280", "Read Values: temp = %f, pres = %f, alt = %f", temp, pres, altitude);
     }
 }
@@ -148,10 +150,14 @@ static void gps_event_handler(void *event_handler_arg, esp_event_base_t event_ba
                  gps->tim.hour, gps->tim.minute, gps->tim.second,
                  gps->latitude, gps->longitude, gps->cog, gps->speed, gps->variation, gps->valid);
         if (gps->valid){
-          char str[128];
-          snprintf(&str[0], 128, "%.05f  %.05f  %.02f  %.02f %f %d", gps->latitude, gps->longitude, gps->cog, gps->speed, gps->variation, gps->valid);
-          SdCardLog(5,"neo6m",str);
+         // char str[128];
+         // snprintf(&str[0], 128, "%.05f  %.05f  %.02f  %.02f %f %d", gps->latitude, gps->longitude, gps->cog, gps->speed, gps->variation, gps->valid);
+         // SdCardLog(5,"neo6m",str);
+        
         }
+          char str[17];
+          snprintf(&str[0], 17, "%2.0fN %2.0fE %2.1fm/s", gps->latitude, gps->longitude,gps->speed);
+          sdd1306_log(1,str);
         break;
     case GPS_UNKNOWN:
         /* print unknown statements */

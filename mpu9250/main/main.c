@@ -41,13 +41,21 @@ static const char *TAG = "main";
 #define I2C_MASTER_NUM I2C_NUM_0 /*!< I2C port number for master dev */
 
 calibration_t cal = {
-    .mag_offset = {.x = 25.183594, .y = 57.519531, .z = -62.648438},
-    .mag_scale = {.x = 1.513449, .y = 1.557811, .z = 1.434039},
-    .accel_offset = {.x = 0.020900, .y = 0.014688, .z = -0.002580},
-    .accel_scale_lo = {.x = -0.992052, .y = -0.990010, .z = -1.011147},
-    .accel_scale_hi = {.x = 1.013558, .y = 1.011903, .z = 1.019645},
+  .mag_offset = {.x = 87.886719, .y = 25.531250, .z = 6.273438},
+    .mag_scale = {.x = 1.070721, .y = 0.885044, .z = 1.068190},
+        .accel_offset = {.x = 0.045010, .y = 0.001923, .z = -0.039888},
+    .accel_scale_lo = {.x = 1.023406, .y = 1.004785, .z = 1.006032},
+    .accel_scale_hi = {.x = -0.980382, .y = -1.001094, .z = -1.015309},
+     .gyro_bias_offset = {.x = 0.768579, .y = -0.180539, .z = 0.919622}};
 
-    .gyro_bias_offset = {.x = 0.303956, .y = -1.049768, .z = -0.403782}};
+/*
+   .mag_offset = {.x = 87.886719, .y = 25.531250, .z = 6.273438},
+    .mag_scale = {.x = 1.070721, .y = 0.885044, .z = 1.068190},
+        .accel_offset = {.x = 0.045010, .y = 0.001923, .z = -0.039888},
+    .accel_scale_lo = {.x = 1.023406, .y = 1.004785, .z = 1.006032},
+    .accel_scale_hi = {.x = -0.980382, .y = -1.001094, .z = -1.015309},
+     .gyro_bias_offset = {.x = 0.768579, .y = -0.180539, .z = 0.919622}
+*/
 
 /**
  * Transformation:
@@ -146,5 +154,5 @@ static void imu_task(void *arg)
 void app_main(void)
 {
   //start i2c task
-  xTaskCreate(imu_task, "imu_task", 2048, NULL, 10, NULL);
+  xTaskCreate(imu_task, "imu_task", 4096, NULL, 10, NULL);
 }
