@@ -39,22 +39,43 @@
 static const char *TAG = "main";
 
 #define I2C_MASTER_NUM I2C_NUM_0 /*!< I2C port number for master dev */
+#define MAGNNETIC_DECLINATION 4.8
+calibration_t cal = {
+       .mag_offset = {.x = 9.437500, .y = 68.281250, .z = -37.640625},
+    .mag_scale = {.x = 0.999212, .y = 1.039023, .z = 0.964536},
+     .accel_offset = {.x = 0.045849, .y = 0.008582, .z = -0.047018},
+    .accel_scale_lo = {.x = 1.026488, .y = 1.008129, .z = 1.012812},
+    .accel_scale_hi = {.x = -0.975170, .y = -0.995973, .z = -1.008010},
+
+     .gyro_bias_offset = {.x = 0.654400, .y = -0.285330, .z = 1.011093}};
+/*
+ .mag_offset = {.x = 10.617188, .y = 68.875000, .z = -39.921875},
+    .mag_scale = {.x = 0.996100, .y = 1.023669, .z = 0.981155},
+    
+       .mag_offset = {.x = 9.437500, .y = 70.062500, .z = -38.781250},
+    .mag_scale = {.x = 0.985117, .y = 1.046128, .z = 0.971830},
+
+    .mag_offset = {.x = 10.617188, .y = 70.062500, .z = -41.062500},
+    .mag_scale = {.x = 1.002208, .y = 1.032489, .z = 0.967428},
+
+    .mag_offset = {.x = 9.437500, .y = 68.281250, .z = -37.640625},
+    .mag_scale = {.x = 0.999212, .y = 1.039023, .z = 0.964536},
 
 calibration_t cal = {
-  .mag_offset = {.x = 87.886719, .y = 25.531250, .z = 6.273438},
-    .mag_scale = {.x = 1.070721, .y = 0.885044, .z = 1.068190},
-        .accel_offset = {.x = 0.045010, .y = 0.001923, .z = -0.039888},
-    .accel_scale_lo = {.x = 1.023406, .y = 1.004785, .z = 1.006032},
-    .accel_scale_hi = {.x = -0.980382, .y = -1.001094, .z = -1.015309},
-     .gyro_bias_offset = {.x = 0.768579, .y = -0.180539, .z = 0.919622}};
+  .mag_offset = {.x = 79.628906, .y = 27.906250, .z = 3.421875},
+    .mag_scale = {.x = 1.004934, .y = 0.981822, .z = 1.013792},
+        .accel_offset = {.x = 0.036187, .y = 0.006879, .z = 0.012961},
+    .accel_scale_lo = {.x = 1.021494, .y = 1.003609, .z = 1.004452},
+    .accel_scale_hi = {.x = -0.983548, .y = -0.998936, .z = -1.016415},
+     .gyro_bias_offset = {.x = 0.670064, .y = -0.149024, .z = 0.884596}};*/
 
 /*
-   .mag_offset = {.x = 87.886719, .y = 25.531250, .z = 6.273438},
-    .mag_scale = {.x = 1.070721, .y = 0.885044, .z = 1.068190},
-        .accel_offset = {.x = 0.045010, .y = 0.001923, .z = -0.039888},
-    .accel_scale_lo = {.x = 1.023406, .y = 1.004785, .z = 1.006032},
-    .accel_scale_hi = {.x = -0.980382, .y = -1.001094, .z = -1.015309},
-     .gyro_bias_offset = {.x = 0.768579, .y = -0.180539, .z = 0.919622}
+   .mag_offset = {.x = 93.195312, .y = 10.687500, .z = 0.000000},
+    .mag_scale = {.x = 1.090124, .y = 1.016649, .z = 0.909877},
+   .accel_offset = {.x = 0.035091, .y = 0.008815, .z = -0.011422},
+    .accel_scale_lo = {.x = 1.020747, .y = 1.005207, .z = 1.004940},
+    .accel_scale_hi = {.x = -0.982701, .y = -1.000773, .z = -1.014469},
+    .gyro_bias_offset = {.x = 0.698556, .y = -0.170777, .z = 0.871709}
 */
 
 /**
@@ -123,7 +144,10 @@ void run_imu(void)
 
       float heading, pitch, roll;
       MadgwickGetEulerAnglesDegrees(&heading, &pitch, &roll);
-      ESP_LOGI(TAG, "heading: %2.3f°, pitch: %2.3f°, roll: %2.3f°, Temp %2.3f°C", heading, pitch, roll, temp);
+
+      heading += MAGNNETIC_DECLINATION - 360*(heading + MAGNNETIC_DECLINATION > 360);
+
+      ESP_LOGI(TAG, "%2.3f %2.3f %2.3f",heading,pitch,roll);
 
       // Make the WDT happy
       esp_task_wdt_reset();
@@ -137,8 +161,8 @@ static void imu_task(void *arg)
 {
 
 #ifdef CONFIG_CALIBRATION_MODE
-  calibrate_gyro();
-  calibrate_accel();
+  //calibrate_gyro();
+  //calibrate_accel();
   calibrate_mag();
 #else
   run_imu();

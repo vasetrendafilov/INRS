@@ -8,7 +8,7 @@ char dist[128];
 uint8_t num = 1;
 
 void SdCardInit(){
-    Queue = xQueueCreate(20, sizeof(Data_t));
+    Queue = xQueueCreate(40, sizeof(Data_t));
     if(Queue == 0)
     {
         ESP_LOGE(SDTAG, "Failed to create queue");
@@ -109,13 +109,13 @@ void SdCardTask(void* arg){
                 return;
             }
 
-            for (size_t i = 0; i < 20 && uxQueueMessagesWaiting(Queue) != 0; i++)
+            for (size_t i = 0; i < 40 && uxQueueMessagesWaiting(Queue) != 0; i++)
                 if( xQueueReceive( Queue, &buf, 0 ) )
                     fprintf(f, "%d,%d,%s,%s\n", buf.timestamp,buf.type,buf.tag,buf.text); 
 
             fclose(f);
             ESP_LOGI(SDTAG, "File written");
         }
-        vTaskDelay(100 / portTICK_PERIOD_MS);
+        vTaskDelay(50 / portTICK_PERIOD_MS);
     }
 }

@@ -9,13 +9,13 @@
 #include "esp_task_wdt.h"
 
 calibration_t cal = {
-    .mag_offset = {.x = 87.886719, .y = 25.531250, .z = 6.273438},
-    .mag_scale = {.x = 1.070721, .y = 0.885044, .z = 1.068190},
-    .accel_offset = {.x = 0.045010, .y = 0.001923, .z = -0.039888},
-    .accel_scale_lo = {.x = 1.023406, .y = 1.004785, .z = 1.006032},
-    .accel_scale_hi = {.x = -0.980382, .y = -1.001094, .z = -1.015309},
+       .mag_offset = {.x = 9.437500, .y = 68.281250, .z = -37.640625},
+    .mag_scale = {.x = 0.999212, .y = 1.039023, .z = 0.964536},
+     .accel_offset = {.x = 0.045849, .y = 0.008582, .z = -0.047018},
+    .accel_scale_lo = {.x = 1.026488, .y = 1.008129, .z = 1.012812},
+    .accel_scale_hi = {.x = -0.975170, .y = -0.995973, .z = -1.008010},
 
-    .gyro_bias_offset = {.x = 0.768579, .y = -0.180539, .z = 0.919622}};
+     .gyro_bias_offset = {.x = 0.654400, .y = -0.285330, .z = 1.011093}};
 
 static const char *TAG = "main";
     
@@ -67,7 +67,6 @@ void mputask(void* arg){
     MadgwickAHRSupdate(DEG2RAD(vg.x), DEG2RAD(vg.y), DEG2RAD(vg.z),
                        va.x, va.y, va.z,
                        vm.x, vm.y, vm.z);
-
     // Print the data out every 10 items
     if (i++ % 10 == 0)
     {
@@ -77,10 +76,14 @@ void mputask(void* arg){
       
       MadgwickGetEulerAnglesDegrees(&heading, &pitch, &roll);
       ESP_LOGI(TAG, "heading: %2.3f°, pitch: %2.3f°, roll: %2.3f°, Temp %2.3f°C", heading, pitch, roll, temp);
-      char str[17];
-      snprintf(&str[0], 17, "R:%2.0f P:%2.0f Y:%2.0f", roll, pitch,heading);
-      //SdCardLog(4,"mpu9250",str);
-      sdd1306_log(0,str);
+      char str[128];
+      snprintf(&str[0], 128, "%2.3f %2.3f %2.3f",  heading, pitch, roll);
+    //  SdCardLog(4,"mpu9250",str);
+      char stro[17];
+      snprintf(&stro[0], 17, "R:%2.0f P:%2.0f Y:%2.0f", roll, pitch,heading);
+      sdd1306_log(0,stro);
+      
+  
 
       // Make the WDT happy
       esp_task_wdt_reset();
@@ -150,14 +153,14 @@ static void gps_event_handler(void *event_handler_arg, esp_event_base_t event_ba
                  gps->tim.hour, gps->tim.minute, gps->tim.second,
                  gps->latitude, gps->longitude, gps->cog, gps->speed, gps->variation, gps->valid);
         if (gps->valid){
-         // char str[128];
-         // snprintf(&str[0], 128, "%.05f  %.05f  %.02f  %.02f %f %d", gps->latitude, gps->longitude, gps->cog, gps->speed, gps->variation, gps->valid);
+          char str[128];
+          snprintf(&str[0], 128, "%.05f  %.05f  %.02f  %.02f %f %d", gps->latitude, gps->longitude, gps->cog, gps->speed, gps->variation, gps->valid);
          // SdCardLog(5,"neo6m",str);
         
         }
-          char str[17];
-          snprintf(&str[0], 17, "%2.0fN %2.0fE %2.1fm/s", gps->latitude, gps->longitude,gps->speed);
-          sdd1306_log(1,str);
+          char stra[17];
+          snprintf(&stra[0], 17, "%2.0fN %2.0fE %2.1fm/s", gps->latitude, gps->longitude,gps->speed);
+          sdd1306_log(1,stra);
         break;
     case GPS_UNKNOWN:
         /* print unknown statements */

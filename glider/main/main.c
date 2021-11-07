@@ -16,7 +16,7 @@ void app_main(void)
     //xTaskCreatePinnedToCore(SdCardTask, "sdcardtask", 4096, NULL, 1, NULL,0); 
     xTaskCreatePinnedToCore(ssd1306_task, "ssd1306_task", 4096, NULL, 1, NULL,0); 
     //xTaskCreatePinnedToCore(bmptask, "bmptask", 2048, NULL, 1, NULL,1); 
-    xTaskCreatePinnedToCore(mputask, "mputask", 4096, NULL, 1, NULL,1); 
+    //xTaskCreatePinnedToCore(mputask, "mputask", 4096, NULL, 1, NULL,1); 
     gpstask();
 
 }
