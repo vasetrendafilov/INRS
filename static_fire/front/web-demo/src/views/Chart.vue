@@ -19,9 +19,6 @@
       <v-btn color="warning" icon @click="loadcell_pause">
         <v-icon>pause</v-icon>
       </v-btn>
-      <v-btn color="red darken-1" icon @click="staticfire">
-       <v-icon>local_fire_department</v-icon>
-      </v-btn>
     </v-toolbar>
     <v-text-field
       style="position:absolute;z-index:10;max-width:85px"
@@ -34,24 +31,9 @@
       @keypress.enter="calibrate">
     </v-text-field>
     <v-card-text class=pt-0>
-      <v-sheet color="#212121">
-        <v-sparkline
-          :value="get_chart_value"
-          color="rgba(255, 255, 255, .7)"
-          :gradient="['#f72047', '#ffd200', '#1feaea']"
-          height="100"
-          padding="24"
-          stroke-linecap="round"
-          line-width="1"
-          smooth
-          auto-draw
-        >
-          <template v-slot:label="item">
-            {{ item.value }}
-          </template>
-        </v-sparkline>
-      </v-sheet>
+      <div id="tester" ref='tester'></div>
     </v-card-text>
+  
   </v-container>
 </template>
 
@@ -65,7 +47,31 @@ export default {
       tare_load: false,
       hidden: true,
       scale: 0,
-      weight: ''
+      weight: '',
+      trace1:{
+      x: [1, 2, 3, 4],
+      y: [10, 15, 13, 17],
+      xaxis: 'x1',
+      yaxis: 'y1',
+      name: 'P',
+      mode: 'lines'
+      },
+      trace2:{
+      x: [1, 2, 3, 4],
+      y: [0, 0, 0, 1],
+      xaxis: 'x1',
+      yaxis: 'y1',
+      name: 'I',
+      mode: 'lines'
+      },
+      trace3:{
+      x: [1, 2, 3, 4],
+      y: [12, 9, 15, 12],
+      xaxis: 'x2',
+      yaxis: 'y2',
+      name: 'D',
+      mode: 'lines'
+      }
     }
   },
   computed: {
@@ -105,6 +111,8 @@ export default {
         })
     },
     loadcell_resume: function () {
+      this.trace1.y[0] +=1
+      Plotly.redraw(this.$refs.tester);
       this.$ajax
         .get('/api/v1/loadcell/resume')
         .then(data => {
@@ -147,6 +155,26 @@ export default {
       .catch(error => {
         console.log(error)
       })
+  
+    var traces = [this.trace1, this.trace2, this.trace3];
+
+    var layout = {
+      title: 'Live ploting',
+      plot_bgcolor:'#212121',
+      paper_bgcolor:'#212121',
+      grid: {rows: 2, columns: 1, pattern: 'independent'},
+      font: {
+        color: 'white'
+      },
+      xaxis: {
+        title: 'Time [s]'
+      },
+      yaxis: {
+        title: 'PID konstants'
+      }
+    };
+    var config = {responsive: true}
+    Plotly.newPlot(this.$refs.tester, traces, layout,config)
   },
   destroyed: function () {
     clearInterval(this.timer)
