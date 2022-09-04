@@ -3,7 +3,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://feit.ukim.edu.mk/en/">
+  <a href="https://github.com/vasetrendafilov/INRS">
     <img src="images/logo.png" alt="Logo" width="90" height="80">
   </a>
 
